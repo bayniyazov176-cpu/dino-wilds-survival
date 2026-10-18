@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>DINO WILDS — Survival</title>
+<style>
+:root{--gold:#ffd36b;--glass:rgba(11,20,19,.78)}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#9bc9d0;font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#fff;touch-action:none}canvas{display:block}#ui{position:fixed;inset:0;pointer-events:none}.top{position:absolute;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.brand,.panel{background:var(--glass);border:1px solid #ffffff25;backdrop-filter:blur(8px);border-radius:14px;padding:10px 12px;box-shadow:0 5px 22px #0002}.brand b{display:block;letter-spacing:2px;color:var(--gold);font-size:13px}.brand span{font-size:10px;opacity:.8}.stats{display:grid;grid-template-columns:repeat(3,minmax(58px,1fr));gap:6px}.stat{min-width:62px;font-size:10px}.stat strong{display:block;font-size:12px;margin-bottom:4px}.bar{height:5px;border-radius:8px;background:#ffffff2c;overflow:hidden}.fill{height:100%;width:100%;background:#83db8c;transition:width .15s}.fill.water{background:#69c9ff}.fill.health{background:#ff7770}.objective{position:absolute;top:90px;left:50%;transform:translateX(-50%);background:var(--glass);border:1px solid #ffffff20;border-radius:20px;padding:7px 13px;font-size:11px;white-space:nowrap}.bottom{position:absolute;bottom:15px;left:12px;right:12px;display:flex;align-items:flex-end;justify-content:space-between}.pad{width:126px;height:126px;border-radius:50%;background:#0b14194f;border:1px solid #ffffff55;position:relative;pointer-events:auto;touch-action:none}.knob{width:48px;height:48px;border-radius:50%;position:absolute;left:38px;top:38px;background:#ffffffad;border:2px solid #fff;box-shadow:0 2px 10px #0003}.actions{display:grid;grid-template-columns:repeat(2,62px);gap:8px;pointer-events:auto}.act{height:58px;border-radius:18px;border:1px solid #ffffff66;background:#142522d9;color:white;font-weight:800;font-size:11px;box-shadow:0 4px 12px #0002}.act em{font-style:normal;display:block;font-size:20px;margin-bottom:1px}.act.primary{background:#b96b27e8}.act:active{transform:scale(.96)}.hint{position:absolute;bottom:152px;left:50%;transform:translateX(-50%);font-size:10px;background:#0b141985;border-radius:10px;padding:7px 10px;white-space:nowrap;opacity:.9}.toast{position:absolute;left:50%;top:45%;transform:translate(-50%,-50%);background:#101b18e8;border:1px solid #ffffff3a;border-radius:16px;padding:14px 18px;text-align:center;max-width:85%;display:none}.toast b{color:var(--gold)}#start{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(#193a3688,#101b23dd);z-index:5;padding:20px}#start .card{max-width:390px;width:100%;text-align:center;padding:25px 22px;border-radius:24px;background:#101d1bf2;border:1px solid #ffffff30;box-shadow:0 20px 70px #0007}#start h1{font-size:28px;line-height:1.05;margin:0;color:var(--gold);letter-spacing:2px}#start p{font-size:13px;line-height:1.5;color:#d6e2db}#start button{border:0;border-radius:14px;background:var(--gold);padding:14px 24px;font-weight:900;font-size:15px;color:#25261d;width:100%;margin-top:8px}#start small{display:block;margin-top:12px;color:#aebfb5;font-size:10px}@media(min-width:700px){.pad{width:145px;height:145px}.knob{left:47px;top:47px}.actions{grid-template-columns:repeat(4,68px)}.act{height:62px}.hint{bottom:170px}}
+</style>
+</head>
+<body>
+<div id="ui">
+ <div class="top"><div class="brand"><b>DINO WILDS</b><span>PRIMAL SURVIVAL • DAY 01</span></div>
+ <div class="panel stats">
+  <div class="stat"><strong>❤ <span id="hpN">100</span></strong><div class="bar"><div id="hp" class="fill health"></div></div></div>
+  <div class="stat"><strong>💧 <span id="waterN">100</span></strong><div class="bar"><div id="water" class="fill water"></div></div></div>
+  <div class="stat"><strong>🍖 <span id="foodN">100</span></strong><div class="bar"><div id="food" class="fill"></div></div></div>
+ </div></div>
+ <div class="objective" id="objective">🌿 O‘rmonni o‘rgan • Resurs yig‘</div>
+ <div class="hint">Chap joystick — yurish • Kamera avtomatik ergashadi</div>
+ <div class="bottom"><div class="pad" id="pad"><div class="knob" id="knob"></div></div>
+ <div class="actions"><button class="act" id="gather"><em>✦</em>YIG‘ISH</button><button class="act" id="eat"><em>🍓</em>OVQAT</button><button class="act" id="jump"><em>↟</em>SAKRASH</button><button class="act primary" id="roar"><em>🐾</em>QO‘RQIT</button></div></div>
+ <div class="toast" id="toast"></div>
+</div>
+<div id="start"><div class="card"><h1>DINO<br>WILDS</h1><p>Yovvoyi orolga xush kelibsan. Resurs yig‘, suv va ovqatni kuzat, dinozavrlardan ehtiyot bo‘l. Quyosh botishidan oldin omon qol!</p><button id="play">O‘YINNI BOSHLASH</button><small>Mobil va kompyuter brauzeri uchun 3D survival prototipi</small></div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(()=> {
+const $=id=>document.getElementById(id);
+if(!window.THREE){$('start').querySelector('p').textContent='3D kutubxonasi yuklanmadi. Internetni yoqib sahifani qayta oching.';return;}
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x9ac8d0);scene.fog=new THREE.Fog(0x9ac8d0,32,115);
+const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,220);
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputEncoding=THREE.sRGBEncoding;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;document.body.insertBefore(renderer.domElement,document.body.firstChild);
+scene.add(new THREE.HemisphereLight(0xd9f4ff,0x40502b,1.65));
+const sun=new THREE.DirectionalLight(0xffedc5,2.1);sun.position.set(-22,35,18);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-35;sun.shadow.camera.right=35;sun.shadow.camera.top=35;sun.shadow.camera.bottom=-35;scene.add(sun);
+const mat=(c,rough=1)=>new THREE.MeshStandardMaterial({color:c,roughness:rough});
+const grassM=[mat(0x648e48),mat(0x72994c),mat(0x587d3d),mat(0x8da85a)],bark=mat(0x63432c),leaf=[mat(0x315e3b),mat(0x3d7444),mat(0x54834b)],stone=[mat(0x777d7a),mat(0x9b9e94),mat(0x5e6867)],sand=mat(0xb5a06c),waterM=mat(0x277f91,.25);
+function mesh(geo,ma,parent=scene){let o=new THREE.Mesh(geo,ma);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;}
+const ground=mesh(new THREE.PlaneGeometry(240,240,40,40),grassM[0]);ground.rotation.x=-Math.PI/2;ground.position.y=-.15;
+const pos=ground.geometry.attributes.position;for(let i=0;i<pos.count;i++){let x=pos.getX(i),y=pos.getY(i);pos.setZ(i,Math.sin(x*.13)*.16+Math.cos(y*.11)*.2+Math.sin((x+y)*.08)*.1)}ground.geometry.computeVertexNormals();
+const water=mesh(new THREE.CircleGeometry(8,40),waterM);water.rotation.x=-Math.PI/2;water.position.set(24,-.08,-18);water.scale.set(1.2,1,1);
+const shore=mesh(new THREE.RingGeometry(8,9.1,40),sand);shore.rotation.x=-Math.PI/2;shore.position.set(24,-.12,-18);shore.scale.set(1.2,1,1);
+const volcano=new THREE.Group();scene.add(volcano);let cone=mesh(new THREE.ConeGeometry(12,22,9),mat(0x51443b),volcano);cone.position.set(0,10,-65);cone.rotation.y=.2;let rim=mesh(new THREE.TorusGeometry(3,1,7,10),mat(0x322b28),volcano);rim.position.set(0,20,-65);rim.rotation.x=Math.PI/2;let lava=mesh(new THREE.CircleGeometry(2.3,10),mat(0xff682e),volcano);lava.position.set(0,19.8,-65);lava.rotation.x=-Math.PI/2;
+// small volcanic ridges
+for(let i=0;i<18;i++){let a=i*2.4,r=18+Math.random()*45;let rock=mesh(new THREE.DodecahedronGeometry(1+Math.random()*2,0),stone[i%3]);rock.position.set(Math.cos(a)*r,.2,Math.sin(a)*r-40);rock.scale.set(1.3,.7,1);}
+// create detailed low-poly trees and stones
+const resources=[];function tree(x,z,s=1){let g=new THREE.Group();scene.add(g);let trunk=mesh(new THREE.CylinderGeometry(.22*s,.38*s,2.2*s,6),bark,g);trunk.position.y=1.1*s;for(let j=0;j<3;j++){let crown=mesh(new THREE.ConeGeometry((1.25-j*.22)*s,1.8*s,7),leaf[(j+Math.floor(Math.random()*3))%3],g);crown.position.set((Math.random()-.5)*.2*s,(2+j*.72)*s,(Math.random()-.5)*.2*s);crown.rotation.y=j*.7;}g.position.set(x,0,z);resources.push({type:'wood',obj:g,pos:new THREE.Vector3(x,0,z),alive:true});return g}
+function rock(x,z,s=1,type='stone'){let g=new THREE.Group();scene.add(g);let b=mesh(new THREE.DodecahedronGeometry(1,0),type==='crystal'?mat(0x4be0d1,.35):type==='ore'?mat(0x574d4b):stone[Math.floor(Math.random()*stone.length)],g);b.scale.set(s*1.2,s*.8,s);b.rotation.set(Math.random(),Math.random(),Math.random());if(type==='ore'){for(let k=0;k<3;k++){let nug=mesh(new THREE.OctahedronGeometry(.22*s),mat(k%2?0xc5a16c:0x8798a1),g);nug.position.set((Math.random()-.5)*s,Math.random()*s,(Math.random()-.5)*s)}}if(type==='crystal'){for(let k=0;k<3;k++){let c=mesh(new THREE.OctahedronGeometry(.3*s),mat(0x8cf5e6,.25),g);c.scale.y=2.2;c.position.set((k-1)*.35*s,.25*s,0)}}g.position.set(x,s*.5,z);resources.push({type,obj:g,pos:new THREE.Vector3(x,0,z),alive:true});return g}
+for(let i=0;i<135;i++){let x=(Math.random()-.5)*155,z=(Math.random()-.5)*155;if(Math.hypot(x,z)<7||Math.hypot(x-24,z+18)<11)continue;tree(x,z,.7+Math.random()*.9)}
+for(let i=0;i<48;i++){let x=(Math.random()-.5)*150,z=(Math.random()-.5)*150;if(Math.hypot(x,z)<6)continue;let q=Math.random();rock(x,z,.5+Math.random()*.8,q<.15?'crystal':q<.55?'ore':'stone')}
+for(let i=0;i<34;i++){let x=(Math.random()-.5)*145,z=(Math.random()-.5)*145;let flower=mesh(new THREE.ConeGeometry(.12,.35,5),mat([0xffd66b,0xe7a7bc,0xfff0cc][i%3]));flower.position.set(x,.17,z);flower.rotation.z=.25}
+function makeDino(color,belly,spikeColor,scale=1){let g=new THREE.Group();const skin=mat(color),under=mat(belly),spike=mat(spikeColor),eye=mat(0x151c19),glint=mat(0xffffff);function part(geo,m,x,y,z,sx=1,sy=1,sz=1){let o=mesh(geo,m,g);o.position.set(x,y,z);o.scale.set(sx,sy,sz);return o}
+part(new THREE.SphereGeometry(1,9,7),skin,0,1.15,0, .72,.63,1.05);
+part(new THREE.SphereGeometry(1,8,6),under,0,.88,.12,.48,.25,.72);
+part(new THREE.SphereGeometry(.48,8,7),skin,0,1.72,-.65,.72,.8,.74);
+part(new THREE.SphereGeometry(.38,8,6),skin,0,1.52,-1.15,.62,.43,.7);
+part(new THREE.SphereGeometry(.22,7,6),under,0,1.43,-1.42,.5,.2,.35);
+for(let side of [-1,1]){part(new THREE.SphereGeometry(.105,8,6),eye,side*.3,1.82,-1.08,.8,1,1);part(new THREE.SphereGeometry(.04,6,5),glint,side*.32,1.86,-1.14,1,1,1);
+let arm=part(new THREE.ConeGeometry(.14,.65,5),skin,side*.55,1.02,-.5,1,1,1);arm.rotation.z=side*-.65;
+for(let l of [-1,1]){let leg=part(new THREE.CapsuleGeometry(.22,.52,3,5),skin,side*.42,.48,.3+l*.24,.85,1,1);leg.rotation.x=.15;}}
+let tail=part(new THREE.ConeGeometry(.44,1.8,7),skin,0,1.1,1.45,1,1,1);tail.rotation.x=-Math.PI/2;tail.rotation.z=Math.PI;
+for(let i=0;i<4;i++){let s=part(new THREE.ConeGeometry(.18,.42,5),spike,0,1.76-i*.08,.15+i*.38,.8,1,.8);s.rotation.x=-.4;}
+g.scale.setScalar(scale);return g}
+const player=makeDino(0x4c9a62,0xc8d5a0,0x2c6546,.9);scene.add(player);player.position.set(0,0,3);
+const dinos=[];for(let i=0;i<7;i++){let d=makeDino(i%3===0?0xb36d47:i%3===1?0x9d9d76:0x557f9b,0xd1b99b,0x473e37,1.15+Math.random()*.45);scene.add(d);let x=(Math.random()-.5)*95,z=(Math.random()-.5)*95;if(Math.hypot(x,z)<18)x+=26;d.position.set(x,0,z);d.rotation.y=Math.random()*Math.PI*2;dinos.push({obj:d,home:new THREE.Vector3(x,0,z),phase:Math.random()*10,speed:.6+Math.random()*.45,aggro:false});}
+const berries=[];for(let i=0;i<26;i++){let x=(Math.random()-.5)*120,z=(Math.random()-.5)*120;if(Math.hypot(x,z)<7)continue;let b=new THREE.Group();scene.add(b);for(let j=0;j<4;j++){let berry=mesh(new THREE.IcosahedronGeometry(.16,1),mat(j%2?0xc9444c:0xd9564e),b);berry.position.set((j%2-.5)*.23,.18+(j>>1)*.17,(j<2?-.1:.1));}b.position.set(x,0,z);berries.push({obj:b,pos:new THREE.Vector3(x,0,z),alive:true});}
+let hp=100,food=100,hydration=100,woodCount=0,stoneCount=0,oreCount=0,crystalCount=0,elapsed=0,jumpV=0,groundY=0,roarUntil=0,toastTimer=0;let started=false;
+const input={x:0,y:0};let joyActive=false,joyId=null;const pad=$('pad'),knob=$('knob');
+function joy(e){let r=pad.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,max=r.width*.34,len=Math.hypot(dx,dy)||1;if(len>max){dx=dx/len*max;dy=dy/len*max}input.x=dx/max;input.y=dy/max;knob.style.left=(r.width/2-24+dx)+'px';knob.style.top=(r.height/2-24+dy)+'px'}
+pad.addEventListener('pointerdown',e=>{joyActive=true;joyId=e.pointerId;pad.setPointerCapture(e.pointerId);joy(e)});pad.addEventListener('pointermove',e=>{if(joyActive&&e.pointerId===joyId)joy(e)});function resetJoy(){joyActive=false;input.x=0;input.y=0;knob.style.left='calc(50% - 24px)';knob.style.top='calc(50% - 24px)'}pad.addEventListener('pointerup',resetJoy);pad.addEventListener('pointercancel',resetJoy);
+const keys={};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key===' '){e.preventDefault();jump()}});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+function say(msg){$('toast').innerHTML=msg;$('toast').style.display='block';toastTimer=2.2}
+function near(list,range){return list.filter(o=>o.alive&&o.pos.distanceTo(player.position)<range).sort((a,b)=>a.pos.distanceTo(player.position)-b.pos.distanceTo(player.position))[0]}
+function gather(){let r=near(resources,4.8);if(!r){say('Yaqinroqda resurs yo‘q.<br><small>Daraxt yoki toshga yaqinlash</small>');return}r.alive=false;r.obj.visible=false;if(r.type==='wood'){woodCount+=2;say('🪵 <b>+2 yog‘och</b>')}else if(r.type==='ore'){oreCount+=1;say('⛏️ <b>Temir rudasi +1</b>')}else if(r.type==='crystal'){crystalCount+=1;say('💎 <b>Kristall +1</b>')}else{stoneCount+=2;say('🪨 <b>+2 tosh</b>')}updateObjective()}
+function eat(){let b=near(berries,4.8);if(b){b.alive=false;b.obj.visible=false;food=Math.min(100,food+28);say('🍓 <b>Yovvoyi meva!</b> +28 ovqat');return}if(food<100){food=Math.min(100,food+12);say('🍖 Zaxiradagi ovqat +12')}else say('Ovqat ko‘rsatkichi to‘la. Meva butalarini qidir!')}
+function jump(){if(groundY<.04)jumpV=6.3}
+function roar(){roarUntil=elapsed+1.6;let scared=0;dinos.forEach(d=>{if(d.obj.position.distanceTo(player.position)<13){d.aggro=false;d.scared=elapsed+4;scared++}});say(scared?'🐾 <b>G‘IRR!</b> Dinozavrlar chekinmoqda':'🐾 <b>G‘IRR!</b> Ovoz uzoqqa tarqaldi')}
+$('gather').onclick=gather;$('eat').onclick=eat;$('jump').onclick=jump;$('roar').onclick=roar;
+function updateObjective(){let t=`🪵 ${woodCount}  •  🪨 ${stoneCount}  •  ⛏️ ${oreCount}  •  💎 ${crystalCount}`;$('objective').textContent=t}
+$('play').onclick=()=>{$('start').style.display='none';started=true;say('Omon qolishga tayyor bo‘l!')};
+function updateHud(){$('hpN').textContent=Math.round(hp);$('waterN').textContent=Math.round(hydration);$('foodN').textContent=Math.round(food);$('hp').style.width=hp+'%';$('water').style.width=hydration+'%';$('food').style.width=food+'%';$('hp').style.background=hp<30?'#ff4242':'#ff7770';$('food').style.background=food<25?'#ff7770':'#83db8c'}
+const clock=new THREE.Clock();let walk=0;
+function animate(){requestAnimationFrame(animate);let dt=Math.min(clock.getDelta(),.045);if(started){elapsed+=dt;food=Math.max(0,food-dt*.17);hydration=Math.max(0,hydration-dt*.23);if(food===0||hydration===0)hp=Math.max(0,hp-dt*.8);if(hp<=0){say('🌙 <b>O‘yin tugadi</b><br>Qayta boshlash uchun sahifani yangilang.');started=false}
+let mx=input.x+(keys.d?1:0)-(keys.a?1:0),my=input.y+(keys.s?1:0)-(keys.w?1:0);let len=Math.hypot(mx,my);if(len>1){mx/=len;my/=len}let speed=5.2;let forward=new THREE.Vector3(-Math.sin(camera.rotation.y),0,-Math.cos(camera.rotation.y)); // camera orientation adjusted below via player-facing
+let desired=new THREE.Vector3(mx,0,my);desired.applyAxisAngle(new THREE.Vector3(0,1,0),camera.rotation.y);if(desired.length()>0.05){desired.normalize();player.position.addScaledVector(desired,speed*dt);player.rotation.y=Math.atan2(desired.x,desired.z);walk+=dt*10}else walk+=dt*2;
+player.position.x=THREE.MathUtils.clamp(player.position.x,-105,105);player.position.z=THREE.MathUtils.clamp(player.position.z,-105,105);
+jumpV-=15*dt;groundY+=jumpV*dt;if(groundY<0){groundY=0;jumpV=0}player.position.y=groundY+Math.abs(Math.sin(walk))*Math.min(.06,len*.04);player.rotation.z=len>.1?Math.sin(walk)*.025:0;
+dinos.forEach(d=>{let o=d.obj,p=o.position,dist=p.distanceTo(player.position);d.phase+=dt;if(d.scared>elapsed){let away=p.clone().sub(player.position).normalize();p.addScaledVector(away,dt*3.5);o.rotation.y=Math.atan2(away.x,away.z)}else if(dist<13){d.aggro=true;if(dist>2.1){let dir=player.position.clone().sub(p).normalize();p.addScaledVector(dir,dt*1.35*d.speed);o.rotation.y=Math.atan2(dir.x,dir.z)}else if(Math.random()<dt*.8){hp=Math.max(0,hp-7);say('⚠️ <b>Dinozavr hujum qildi!</b> Uzoqlash yoki qo‘rqit!')}}else{d.aggro=false;let target=d.home.clone().add(new THREE.Vector3(Math.sin(d.phase*.3)*4,0,Math.cos(d.phase*.24)*4));let dir=target.sub(p);if(dir.length()>.4){dir.normalize();p.addScaledVector(dir,dt*.65*d.speed);o.rotation.y=Math.atan2(dir.x,dir.z)}}o.position.y=Math.abs(Math.sin(d.phase*3))*.04;o.rotation.z=Math.sin(d.phase*2)*.025});
+if(Math.hypot(player.position.x-24,player.position.z+18)<10){hydration=Math.min(100,hydration+dt*3.5)}
+camera.position.lerp(new THREE.Vector3(player.position.x,player.position.y+5.1,player.position.z+9.5),1-Math.pow(.001,dt));camera.lookAt(player.position.x,player.position.y+1.15,player.position.z-1.5);
+if(toastTimer>0){toastTimer-=dt;if(toastTimer<=0)$('toast').style.display='none'}
+updateHud();
+}renderer.render(scene,camera)}
+camera.position.set(0,6,13);camera.lookAt(0,1,0);animate();
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,1.7))});
+})();
+</script>
+</body></html>
